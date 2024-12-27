@@ -3,6 +3,8 @@ package Lox;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,15 +16,37 @@ public class Lox {
     static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
-        if (args.length > 1) {
-            System.out.println("Usage: jlox [script]");
+        if (args.length > 2) {
+            System.out.println("Usage:\njlox [script]\njlox -bench [benchmarksdirname]");
             System.exit(64);
+        } else if (args.length == 2) {
+					  if (!args[0].equals("-bench")) {
+								System.out.println("Usage:\njlox [script]\njlox -bench [benchmarksdirname]");
+					      System.exit(64);
+						}
+            runBenchmarks(args[1]);
         } else if (args.length == 1) {
-            runFile(args[0]);
-        } else {
+						runFile(args[0]);
+				} else {
             runPrompt();
         }
     }
+
+		private static void runBenchmarks(String dirname) throws IOException {
+				File dir = new File(dirname);
+				File[] files = dir.listFiles(new FilenameFilter() {
+						public boolean accept(File dir, String name) {
+						return name.toLowerCase().endsWith(".lox");
+						}
+				});
+				for (File file: files) {
+						String filename = file.getName();
+						System.out.print("Running ");
+						System.out.println(filename);
+						runFile(dirname + "\\" + filename);
+						System.out.print("\n\n\n\n");
+				}
+		}
 
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
